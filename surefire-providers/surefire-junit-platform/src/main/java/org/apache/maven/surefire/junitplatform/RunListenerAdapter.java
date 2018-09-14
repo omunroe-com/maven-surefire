@@ -90,7 +90,7 @@ final class RunListenerAdapter
     {
         ensureTestSetStarted( testIdentifier );
         String source = getLegacyReportingClassName( testIdentifier );
-        runListener.testSkipped( ignored( source, getLegacyReportingName( testIdentifier ), reason ) );
+        runListener.testSkipped( ignored( source, getReportingName( testIdentifier ), reason ) );
         completeTestSetIfNecessary( testIdentifier );
     }
 
@@ -186,7 +186,7 @@ final class RunListenerAdapter
     private SimpleReportEntry createTestSetReportEntry( TestIdentifier testIdentifier )
     {
         return new SimpleReportEntry(
-                        JUnitPlatformProvider.class.getName(), testIdentifier.getLegacyReportingName() );
+                        JUnitPlatformProvider.class.getName(), getReportingName( testIdentifier ) );
     }
 
     private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier )
@@ -205,13 +205,17 @@ final class RunListenerAdapter
                     TestIdentifier testIdentifier, StackTraceWriter stackTraceWriter )
     {
         String source = getLegacyReportingClassName( testIdentifier );
-        String name = getLegacyReportingName( testIdentifier );
+        String name = getReportingName( testIdentifier );
 
         return SimpleReportEntry.withException( source, name, stackTraceWriter );
     }
 
-    private String getLegacyReportingName( TestIdentifier testIdentifier )
+    private String getReportingName( TestIdentifier testIdentifier )
     {
+        if ( Boolean.getBoolean( "surefire.junit.platform.display.name.enabled" ) )
+        {
+            return testIdentifier.getDisplayName();
+        }
         // Surefire cuts off the name at the first '(' character. Thus, we have to pick a different
         // character to represent parentheses. "()" are removed entirely to maximize compatibility with
         // existing reporting tools because in the old days test methods used to not have parameters.
