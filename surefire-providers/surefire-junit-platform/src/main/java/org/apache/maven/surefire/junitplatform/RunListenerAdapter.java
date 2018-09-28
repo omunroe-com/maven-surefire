@@ -212,7 +212,7 @@ final class RunListenerAdapter
 
     private String getReportingName( TestIdentifier testIdentifier )
     {
-        if ( Boolean.getBoolean( "surefire.junit.platform.display.name.enabled" ) )
+        if ( Boolean.getBoolean( "junit.jupiter.display.name.enabled" ) )
         {
             return testIdentifier.getDisplayName();
         }

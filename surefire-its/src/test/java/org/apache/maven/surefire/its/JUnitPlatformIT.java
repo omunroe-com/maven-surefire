@@ -45,6 +45,12 @@ public class JUnitPlatformIT
     }
 
     @Test
+    public void testDisplayNames()
+    {
+        unpack( "/junit-platform-display-names" ).executeTest().verifyErrorFree( 3 );
+    }
+
+    @Test
     public void testVintageEngine()
     {
         unpack( "/junit-platform-engine-vintage" ).executeTest().verifyErrorFree( 1 );
