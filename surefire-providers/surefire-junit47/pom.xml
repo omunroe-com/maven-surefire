@@ -33,10 +33,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.github.stephenc.jcip</groupId>
-      <artifactId>jcip-annotations</artifactId>
-      <version>1.0-1</version>
-      <scope>test</scope>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>common-junit48</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -47,23 +46,18 @@
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>maven-surefire-common</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven.surefire</groupId>
-      <artifactId>common-junit48</artifactId>
-      <version>${project.version}</version>
+      <groupId>com.github.stephenc.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+      <version>1.0-1</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources/META-INF</directory>
-        <targetPath>META-INF</targetPath>
-      </resource>
-    </resources>
-
     <plugins>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -131,7 +125,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
@@ -141,21 +134,10 @@
             </goals>
             <configuration>
               <minimizeJar>true</minimizeJar>
-              <artifactSet>
-                <includes>
-                  <include>org.apache.maven.surefire:common-junit3</include>
-                  <include>org.apache.maven.surefire:common-junit4</include>
-                  <include>org.apache.maven.surefire:common-java5</include>
-                </includes>
-              </artifactSet>
               <relocations>
                 <relocation>
                   <pattern>javax.annotation</pattern>
                   <shadedPattern>org.apache.maven.surefire.javax.annotation</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.apache.maven.shared</pattern>
-                  <shadedPattern>org.apache.maven.surefire.org.apache.maven.shared</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.maven.surefire.junitcore.ThreadSafe</pattern>
