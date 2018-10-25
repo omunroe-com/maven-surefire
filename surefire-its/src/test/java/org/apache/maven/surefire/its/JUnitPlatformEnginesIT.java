@@ -111,7 +111,7 @@ public class JUnitPlatformEnginesIT
 
         String providerClasspath = "[DEBUG] provider(compact) classpath:"
                 + "  surefire-junit-platform-*.jar"
-                + "  junit-platform-launcher-1.3.1.jar"
+                + "  junit-platform-launcher-*.jar"
                 + "  surefire-api-*.jar"
                 + "  surefire-logger-api-*.jar";
 
@@ -137,7 +137,7 @@ public class JUnitPlatformEnginesIT
                 + "  opentest4j-" + opentest + ".jar"
                 + "  junit-jupiter-api-" + jupiter + ".jar"
                 + "  surefire-junit-platform-*.jar"
-                + "  junit-platform-launcher-1.3.1.jar";
+                + "  junit-platform-launcher-" + platform + ".jar";
 
         lines = validator.loadLogLines( startsWith( "[DEBUG] boot(compact) classpath" ) );
 

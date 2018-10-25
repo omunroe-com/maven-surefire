@@ -491,11 +491,11 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Allows you to specify the name of the JUnit Platform artifact.
-     * If not set, {@code org.junit.platform:junit-platform-engine} will be used.
+     * If not set, {@code org.junit.platform:junit-platform-commons} will be used.
      *
      * @since 2.22.0
      */
-    @Parameter( property = "junitPlatformArtifactName", defaultValue = "org.junit.platform:junit-platform-engine" )
+    @Parameter( property = "junitPlatformArtifactName", defaultValue = "org.junit.platform:junit-platform-commons" )
     private String junitPlatformArtifactName;
 
     /**
@@ -2931,6 +2931,7 @@ public abstract class AbstractSurefireMojo
             Set<Artifact> providerArtifacts = dependencyResolver.getProviderClasspath( provider, version, null );
             resolveJUnitJupiterEngine( providerArtifacts );
             resolveJUnitVintageEngine( providerArtifacts );
+            alignJUnitPlatformLauncher( providerArtifacts );
             return providerArtifacts;
         }
 
@@ -2993,6 +2994,36 @@ public abstract class AbstractSurefireMojo
             );
             @SuppressWarnings( "unchecked" )
             Set<Artifact> resolvedArtifacts = resolveArtifact( null, junitVintageEngine ).getArtifacts();
+            providerArtifacts.addAll( resolvedArtifacts );
+        }
+
+        private void alignJUnitPlatformLauncher( Set<Artifact> providerArtifacts )
+        {
+            Map<String, Artifact> providerArtifactMap = new HashMap<String, Artifact>();
+            for ( Artifact artifact : providerArtifacts )
+            {
+                String key = artifact.getGroupId() + ":" + artifact.getArtifactId();
+                providerArtifactMap.put( key, artifact );
+            }
+            Artifact defaultLauncher = providerArtifactMap.get( "org.junit.platform:junit-platform-launcher" );
+            Artifact junitPlatformCommons = getProjectArtifactMap().get( "org.junit.platform:junit-platform-commons" );
+
+            if ( junitPlatformCommons.getVersion().equals( defaultLauncher.getVersion() ) )
+            {
+                return;
+            }
+            // resolve "junit-platform-launcher" and its transitive dependencies
+            Artifact junitPlatformLauncher = new DefaultArtifact(
+                    "org.junit.platform",
+                    "junit-platform-launcher",
+                    junitPlatformCommons.getVersionRange(),
+                    "test",
+                    "jar",
+                    "",
+                    junitPlatformCommons.getArtifactHandler()
+            );
+            @SuppressWarnings( "unchecked" )
+            Set<Artifact> resolvedArtifacts = resolveArtifact( null, junitPlatformLauncher ).getArtifacts();
             providerArtifacts.addAll( resolvedArtifacts );
         }
     }
