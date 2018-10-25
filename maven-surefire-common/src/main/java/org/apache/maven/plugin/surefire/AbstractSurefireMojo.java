@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -2925,8 +2926,74 @@ public abstract class AbstractSurefireMojo
         public Set<Artifact> getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
+            String provider = "surefire-junit-platform";
             String version = surefireBooterArtifact.getBaseVersion();
-            return dependencyResolver.getProviderClasspath( "surefire-junit-platform", version, null );
+            Set<Artifact> providerArtifacts = dependencyResolver.getProviderClasspath( provider, version, null );
+            resolveJUnitJupiterEngine( providerArtifacts );
+            resolveJUnitVintageEngine( providerArtifacts );
+            return providerArtifacts;
+        }
+
+        private void resolveJUnitJupiterEngine( Set<Artifact> providerArtifacts )
+        {
+            Artifact junitJupiterApi = getProjectArtifactMap().get( "org.junit.jupiter:junit-jupiter-api" );
+            if ( junitJupiterApi == null ) // no api, no engine
+            {
+                return;
+            }
+            Artifact junitJupiterEngine = getProjectArtifactMap().get( "org.junit.jupiter:junit-jupiter-engine" );
+            if ( junitJupiterEngine != null ) // engine already resolved by project
+            {
+                return;
+            }
+            // resolve "junit-jupiter-engine" and its transitive dependencies
+            junitJupiterEngine = new DefaultArtifact(
+                    "org.junit.jupiter",
+                    "junit-jupiter-engine",
+                    junitJupiterApi.getVersionRange(),
+                    "test",
+                    "jar",
+                    "",
+                    junitJupiterApi.getArtifactHandler()
+            );
+            @SuppressWarnings( "unchecked" )
+            Set<Artifact> resolvedArtifacts = resolveArtifact( null, junitJupiterEngine ).getArtifacts();
+            providerArtifacts.addAll( resolvedArtifacts );
+        }
+
+        private void resolveJUnitVintageEngine( Set<Artifact> providerArtifacts )
+        {
+            Artifact junit = getProjectArtifactMap().get( "junit:junit" );
+            if ( junit == null || !junit.getBaseVersion().equals( "4.12" ) ) // no or wrong "junit", no engine
+            {
+                return;
+            }
+            Artifact junitVintageEngine = getProjectArtifactMap().get( "org.junit.vintage:junit-vintage-engine" );
+            if ( junitVintageEngine != null ) // engine already resolved by project
+            {
+                return;
+            }
+            // determine version
+            String junitVintageVersion = "5.3.1";
+            Artifact junitPlatformCommons = getProjectArtifactMap().get( "org.junit.platform:junit-platform-commons" );
+            if ( junitPlatformCommons != null )
+            {
+                // heuristic: from Platform "x.y.z" to Vintage "5" + ".y.z"
+                junitVintageVersion = "5" + junitPlatformCommons.getBaseVersion().substring( 1 );
+            }
+            // resolve "junit-vintage-engine" and its transitive dependencies
+            junitVintageEngine = new DefaultArtifact(
+                    "org.junit.vintage",
+                    "junit-vintage-engine",
+                    VersionRange.createFromVersion( junitVintageVersion ),
+                    "test",
+                    "jar",
+                    "",
+                    junit.getArtifactHandler()
+            );
+            @SuppressWarnings( "unchecked" )
+            Set<Artifact> resolvedArtifacts = resolveArtifact( null, junitVintageEngine ).getArtifacts();
+            providerArtifacts.addAll( resolvedArtifacts );
         }
     }
 
